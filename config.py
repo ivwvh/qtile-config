@@ -28,6 +28,10 @@ from libqtile import bar, layout, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
+from libqtile import hook
+import os
+import subprocess
+
 
 mod = "mod4"
 terminal = guess_terminal()
@@ -41,7 +45,7 @@ keys = [
     Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
     Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
     Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
-    Key([mod], "space", lazy.layout.next(), desc="Move window focus to other window"),
+    Key([mod, alt], "space", lazy.layout.next(), desc="Move window focus to other window"),
     # Move windows between left/right columns or move up/down in current stack.
     # Moving out of range in Columns layout will create new column.
     Key([mod, "shift"], "h", lazy.layout.shuffle_left(), desc="Move window to the left"),
@@ -75,12 +79,18 @@ keys = [
         lazy.window.toggle_fullscreen(),
         desc="Toggle fullscreen on the focused window",
     ),
-    Key([mod], "t", lazy.window.toggle_floating(), desc="Toggle floating on the focused window"),
-    Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
-    Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
-    Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
-    Key([mod], 'p', lazy.spawn('wofi --show run')),
-    Key([mod], 'space', lazy.widget['keyboardlayout'].next_keyboard()),
+    Key([mod], "t", lazy.window.toggle_floating(),
+        desc="Toggle floating on the focused window"),
+    Key([mod, "control"], "r", lazy.reload_config(),
+        desc="Reload the config"),
+    Key([mod, "control"], "q", lazy.shutdown(),
+        desc="Shutdown Qtile"),
+    Key([mod], "r", lazy.spawncmd(),
+        desc="Spawn a command using a prompt widget"),
+    Key([mod], 'p', lazy.spawn('wofi -G --show run'),
+        desc='Run wofi'),
+    Key([mod], 'space', lazy.widget['keyboardlayout'].next_keyboard(),
+        desc='Change keyboard layout'),
     Key([mod, 'shift'], 's', lazy.spawn('slurp | grim -g - - | wl-copy', shell=True))
 ]
 
@@ -110,8 +120,21 @@ for i in groups:
         ]
     )
 
+
+# hooks
+@hook.subscribe.startup_once
+def autostart():
+    home = os.path.expanduser('~/.config/qtile/autostart.sh')
+    subprocess.Popen([home])
+
+
 layouts = [
-    layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
+    layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"],
+                   border_width=4,
+                   border_focus='#6a9fb5',
+                   border_normal='#172b4a',
+                   margin=4
+                   ),
     layout.Max(),
     # Try more layouts by unleashing below layouts.
     # layout.Stack(num_stacks=2),
@@ -127,15 +150,16 @@ layouts = [
 ]
 
 widget_defaults = dict(
-    font="FantasqueSansMNerdFont",
-    fontsize=15,
+    font="JetBrainsMono",
+    fontsize=14,
     padding=3,
+    foreground='e5f0f2'
 )
 extension_defaults = widget_defaults.copy()
 
 screens = [
     Screen(
-        wallpaper='~/.config/qtile/wallpapers/wallpaper.png',
+        wallpaper='~/.config/qtile/wallpapers/cherry_blossom.jpeg',
         wallpaper_mode='stretch',
         top=bar.Bar(
             [
@@ -148,18 +172,21 @@ screens = [
                     },
                     name_transform=lambda name: name.upper(),
                 ),
-                widget.Notify(),
+                # widget.Notify(),
                 # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-                # widget.StatusNotifier(),
+                widget.StatusNotifier(),
+                widget.TextBox('┇'),
                 # widget.Systray(),
                 widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
+                widget.TextBox('┇'),
                 widget.KeyboardLayout(configured_keyboards=['us', 'ru']),
+                widget.TextBox('┇'),
                 widget.QuickExit(),
             ],
             30,
-            background='#282828',
+            background='#0a1a33',
             # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
-            # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
+            border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
         ),
         # You can uncomment this variable if you see that on X11 floating resize/moving is laggy
         # By default we handle these events delayed to already improve performance, however your system might still be struggling
@@ -180,9 +207,9 @@ screens = [
                     },
                     name_transform=lambda name: name.upper(),
                 ),
-                widget.Notify(),
+                # widget.Notify(),
                 # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-                # widget.StatusNotifier(),
+                widget.StatusNotifier(),
                 # widget.Systray(),
                 widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
                 widget.KeyboardLayout(configured_keyboards=['us', 'ru']),
