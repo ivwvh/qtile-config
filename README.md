@@ -1,2 +1,2 @@
-application runner: wofi
+application runner: wofi\n
 notification daemon: dunst
